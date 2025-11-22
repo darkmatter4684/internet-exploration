@@ -54,6 +54,65 @@ def update_entity(entity_id: int, entity: schemas.EntityUpdate, db: Session = De
         raise HTTPException(status_code=404, detail="Entity not found")
     return db_entity
 
+from fastapi.staticfiles import StaticFiles
+from fastapi import File, UploadFile, Body
+import shutil
+import os
+import uuid
+import httpx
+
+# Mount media directory
+os.makedirs("media", exist_ok=True)
+app.mount("/media", StaticFiles(directory="media"), name="media")
+
+@app.post("/upload/")
+async def upload_image(file: UploadFile = File(...)):
+    file_extension = os.path.splitext(file.filename)[1]
+    if not file_extension:
+        file_extension = ".jpg" # Default
+    
+    file_name = f"{uuid.uuid4()}{file_extension}"
+    file_path = f"media/{file_name}"
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"url": f"/media/{file_name}"}
+
+@app.post("/fetch-image/")
+async def fetch_image(payload: dict = Body(...)):
+    url = payload.get("url")
+    if not url:
+        raise HTTPException(status_code=400, detail="URL is required")
+        
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            
+            # Try to guess extension from content-type or url
+            content_type = resp.headers.get("content-type", "")
+            if "image/png" in content_type:
+                ext = ".png"
+            elif "image/jpeg" in content_type:
+                ext = ".jpg"
+            elif "image/webp" in content_type:
+                ext = ".webp"
+            elif "image/gif" in content_type:
+                ext = ".gif"
+            else:
+                ext = ".jpg" # Fallback
+                
+            file_name = f"{uuid.uuid4()}{ext}"
+            file_path = f"media/{file_name}"
+            
+            with open(file_path, "wb") as f:
+                f.write(resp.content)
+                
+            return {"url": f"/media/{file_name}"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch image: {str(e)}")
+
 @app.delete("/entities/{entity_id}", response_model=schemas.Entity)
 def delete_entity(entity_id: int, db: Session = Depends(get_db)):
     db_entity = crud.delete_entity(db, entity_id)

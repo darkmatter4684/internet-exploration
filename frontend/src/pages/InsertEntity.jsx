@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { Plus, Minus, Save, X } from 'lucide-react';
+import ImageInput from '../components/ImageInput';
+import { Plus, Minus, Save, X, Image as ImageIcon } from 'lucide-react';
 
 export default function InsertEntity() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [activeImageModal, setActiveImageModal] = useState(null); // Index of dynamic attr being edited for image
 
     // Fixed Fields
     const [formData, setFormData] = useState({
@@ -22,6 +24,10 @@ export default function InsertEntity() {
 
     const handleFixedChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleImageChange = (url) => {
+        setFormData({ ...formData, image_url: url });
     };
 
     const addDynamicAttribute = () => {
@@ -134,13 +140,10 @@ export default function InsertEntity() {
                     </div>
 
                     <div className="sm:col-span-6">
-                        <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                        <input
-                            type="text"
-                            name="image_url"
+                        <ImageInput
                             value={formData.image_url}
-                            onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            onChange={handleImageChange}
+                            label="Main Image"
                         />
                     </div>
 
@@ -204,13 +207,23 @@ export default function InsertEntity() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500">URL (Optional)</label>
-                                        <input
-                                            type="text"
-                                            value={attr.url}
-                                            onChange={(e) => handleDynamicChange(index, 'url', e.target.value)}
-                                            className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                        />
+                                        <label className="block text-xs font-medium text-gray-500">URL / Image</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={attr.url}
+                                                onChange={(e) => handleDynamicChange(index, 'url', e.target.value)}
+                                                className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveImageModal(index)}
+                                                className="mt-1 inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                                title="Upload Image"
+                                            >
+                                                <ImageIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-gray-500">Remarks (Optional)</label>
@@ -219,6 +232,7 @@ export default function InsertEntity() {
                                             value={attr.remarks}
                                             onChange={(e) => handleDynamicChange(index, 'remarks', e.target.value)}
                                             className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            placeholder="e.g., Important note"
                                         />
                                     </div>
                                 </div>
@@ -230,8 +244,40 @@ export default function InsertEntity() {
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+                {/* Image Modal for Dynamic Attributes */}
+                {activeImageModal !== null && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                        <div className="bg-white rounded-lg p-6 max-w-lg w-full relative">
+                            <button
+                                onClick={() => setActiveImageModal(null)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+                            >
+                                <X className="h-6 w-6" />
+                            </button>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Set Image for Attribute</h3>
+                            <ImageInput
+                                value={dynamicAttributes[activeImageModal]?.url || ''}
+                                onChange={(url) => {
+                                    handleDynamicChange(activeImageModal, 'url', url);
+                                    // Don't close immediately so they can see preview
+                                }}
+                                label="Attribute Image"
+                            />
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveImageModal(null)}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="pt-5 flex justify-end space-x-3">
                     <button
                         type="button"
                         onClick={() => navigate('/')}

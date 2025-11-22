@@ -4,3 +4,5 @@ sqlalchemy
 pydantic
 rapidfuzz
 python-multipart
+httpx
+aiofiles

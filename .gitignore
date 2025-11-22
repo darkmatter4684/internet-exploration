@@ -43,3 +43,6 @@ coverage/
 # IDEs
 .vscode/
 .idea/
+
+# backend
+backend/media/

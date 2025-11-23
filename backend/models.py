@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, String, JSON, DateTime
+from sqlalchemy.sql import func
 from database import Base
 
 class Entity(Base):
@@ -12,6 +13,8 @@ class Entity(Base):
     tags = Column(JSON)  # Storing tags as a JSON list
     image_url = Column(String, nullable=True)
     attributes = Column(JSON, default={})  # Dynamic attributes: {key: {key, description, url, remarks, active}}
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 class Tag(Base):
     __tablename__ = "tags"

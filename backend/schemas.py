@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
+from datetime import datetime
 
 class DynamicAttribute(BaseModel):
     key: str
@@ -7,6 +8,8 @@ class DynamicAttribute(BaseModel):
     url: Optional[str] = None
     remarks: Optional[str] = None
     active: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 class Tag(BaseModel):
     id: int
@@ -32,6 +35,8 @@ class EntityUpdate(EntityBase):
 
 class Entity(EntityBase):
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True

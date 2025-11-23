@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
+import { formatDateIST } from '../utils';
 
 export default function EntityTile({ entity }) {
     return (
@@ -52,6 +53,12 @@ export default function EntityTile({ entity }) {
                             <span className="text-xs text-gray-500">+{entity.tags.length - 5} more</span>
                         )}
                     </div>
+
+                    {entity.updated_at && (
+                        <div className="mt-2 pt-2 border-t border-gray-50 text-xs text-gray-400 text-right">
+                            Updated: {formatDateIST(entity.updated_at)}
+                        </div>
+                    )}
                 </div>
             </div>
         </Link>

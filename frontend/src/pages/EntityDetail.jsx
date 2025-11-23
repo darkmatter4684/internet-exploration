@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { formatDateIST } from '../utils';
 import api from '../api';
 import { Edit, MoreVertical, Trash2, ExternalLink, ArrowUp, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -136,6 +137,11 @@ export default function EntityDetail() {
                                 </div>
                             </div>
 
+                            <div className="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                                <span>Created: {formatDateIST(entity.created_at)}</span>
+                                <span>Updated: {formatDateIST(entity.updated_at)}</span>
+                            </div>
+
                             <p className="mt-4 text-gray-600 text-lg">{entity.description}</p>
 
                             <div className="mt-6">
@@ -205,6 +211,11 @@ export default function EntityDetail() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
                                         <h3 className="text-lg font-medium text-gray-900 truncate">{attr.key}</h3>
+                                        {attr.updated_at && (
+                                            <span className="text-xs text-gray-400" title={`Created: ${formatDateIST(attr.created_at)}`}>
+                                                Updated: {formatDateIST(attr.updated_at)}
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-gray-600 mt-1">{attr.description}</p>
                                     {attr.url && !isImage(attr.url) && (

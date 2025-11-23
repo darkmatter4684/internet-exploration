@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 import models, schemas
 from rapidfuzz import process, fuzz
 import json
+from datetime import datetime
 
 def get_entity(db: Session, entity_id: int):
     return db.query(models.Entity).filter(models.Entity.id == entity_id).first()
@@ -11,8 +12,15 @@ def get_entities(db: Session, skip: int = 0, limit: int = 100):
 
 def create_entity(db: Session, entity: schemas.EntityCreate):
     # Convert Pydantic models to dicts for JSON storage
-    attributes_dict = {k: v.dict() for k, v in entity.attributes.items()}
+    attributes_dict = {}
+    now = datetime.utcnow().isoformat()
     
+    for k, v in entity.attributes.items():
+        attr_data = v.dict()
+        attr_data['created_at'] = now
+        attr_data['updated_at'] = now
+        attributes_dict[k] = attr_data
+
     # Sync tags
     if entity.tags:
         sync_tags(db, entity.tags)
@@ -42,7 +50,29 @@ def update_entity(db: Session, entity_id: int, entity: schemas.EntityUpdate):
     db_entity.description = entity.description
     db_entity.tags = entity.tags
     db_entity.image_url = entity.image_url
-    db_entity.attributes = {k: v.dict() for k, v in entity.attributes.items()}
+    db_entity.tags = entity.tags
+    db_entity.image_url = entity.image_url
+    
+    # Handle dynamic attributes timestamps
+    current_attributes = db_entity.attributes or {}
+    new_attributes = {}
+    now = datetime.utcnow().isoformat()
+
+    for k, v in entity.attributes.items():
+        attr_data = v.dict()
+        
+        if k in current_attributes:
+            # Preserve created_at, update updated_at
+            attr_data['created_at'] = current_attributes[k].get('created_at', now)
+            attr_data['updated_at'] = now
+        else:
+            # New attribute
+            attr_data['created_at'] = now
+            attr_data['updated_at'] = now
+            
+        new_attributes[k] = attr_data
+
+    db_entity.attributes = new_attributes
     
     # Sync tags
     if entity.tags:

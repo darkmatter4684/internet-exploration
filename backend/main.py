@@ -84,29 +84,29 @@ async def upload_image(file: UploadFile = File(...)):
         
     return {"url": f"/media/{file_name}"}
 
-@app.post("/fetch-image/")
-async def fetch_image(payload: dict = Body(...)):
+@app.post("/fetch-media/")
+async def fetch_media(payload: dict = Body(...)):
     url = payload.get("url")
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
         
     try:
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url)
+            resp = await client.get(url, follow_redirects=True)
             resp.raise_for_status()
             
             # Try to guess extension from content-type or url
             content_type = resp.headers.get("content-type", "")
-            if "image/png" in content_type:
-                ext = ".png"
-            elif "image/jpeg" in content_type:
-                ext = ".jpg"
-            elif "image/webp" in content_type:
-                ext = ".webp"
-            elif "image/gif" in content_type:
-                ext = ".gif"
-            else:
-                ext = ".jpg" # Fallback
+            ext = ".jpg" # Default fallback
+            
+            # Images
+            if "image/png" in content_type: ext = ".png"
+            elif "image/jpeg" in content_type: ext = ".jpg"
+            elif "image/webp" in content_type: ext = ".webp"
+            elif "image/gif" in content_type: ext = ".gif"
+            # Videos
+            elif "video/mp4" in content_type: ext = ".mp4"
+            elif "video/webm" in content_type: ext = ".webm"
                 
             file_name = f"{uuid.uuid4()}{ext}"
             file_path = f"media/{file_name}"
@@ -116,7 +116,7 @@ async def fetch_image(payload: dict = Body(...)):
                 
             return {"url": f"/media/{file_name}"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to fetch image: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to fetch media: {str(e)}")
 
 @app.delete("/entities/{entity_id}", response_model=schemas.Entity)
 def delete_entity(entity_id: int, db: Session = Depends(get_db)):

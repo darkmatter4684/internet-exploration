@@ -56,6 +56,12 @@ export default function EntityDetail() {
         return url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
     };
 
+    // Helper to check if a URL is a video
+    const isVideo = (url) => {
+        if (!url) return false;
+        return url.match(/\.(mp4|webm)$/) != null;
+    };
+
     const toggleExpand = (key) => {
         setExpandedKeys(prev => ({
             ...prev,
@@ -240,6 +246,20 @@ export default function EntityDetail() {
                                         className="w-full h-auto rounded-lg shadow-sm"
                                         onClick={() => toggleExpand(attr.key)}
                                     />
+                                </div>
+                            )}
+
+                            {/* Video Player Inline */}
+                            {isVideo(attr.url) && (
+                                <div className="mt-4">
+                                    <video
+                                        controls
+                                        className="w-full max-h-[500px] rounded-lg shadow-sm bg-black"
+                                        preload="metadata"
+                                    >
+                                        <source src={attr.url} type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
                                 </div>
                             )}
                         </div>

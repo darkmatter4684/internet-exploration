@@ -1,6 +1,13 @@
 export const formatDateIST = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+
+    // Ensure the date string is treated as UTC if it doesn't have timezone info
+    let utcString = dateString;
+    if (!dateString.endsWith('Z') && !dateString.includes('+')) {
+        utcString = dateString + 'Z';
+    }
+
+    const date = new Date(utcString);
     return date.toLocaleString('en-IN', {
         timeZone: 'Asia/Kolkata',
         day: '2-digit',

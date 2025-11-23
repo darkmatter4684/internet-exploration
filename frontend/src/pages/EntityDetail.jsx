@@ -9,6 +9,7 @@ export default function EntityDetail() {
     const [entity, setEntity] = useState(null);
     const [loading, setLoading] = useState(true);
     const [expandedKeys, setExpandedKeys] = useState({});
+    const [expandedMainImage, setExpandedMainImage] = useState(false);
 
     const fetchEntity = async () => {
         try {
@@ -63,7 +64,8 @@ export default function EntityDetail() {
                             <img
                                 src={entity.image_url}
                                 alt={entity.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setExpandedMainImage(!expandedMainImage)}
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
@@ -114,6 +116,18 @@ export default function EntityDetail() {
                         </div>
                     </div>
                 </div>
+
+                {/* Expanded Main Image */}
+                {expandedMainImage && entity.image_url && (
+                    <div className="p-4 border-t border-gray-100 bg-gray-50 animate-fade-in">
+                        <img
+                            src={entity.image_url}
+                            alt="Expanded Main"
+                            className="w-full h-auto rounded-lg shadow-sm cursor-pointer"
+                            onClick={() => setExpandedMainImage(false)}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Dynamic Attributes Section */}

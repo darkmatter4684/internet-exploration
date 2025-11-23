@@ -8,7 +8,7 @@ export default function EntityDetail() {
     const navigate = useNavigate();
     const [entity, setEntity] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [expandedImage, setExpandedImage] = useState(null);
+    const [expandedKeys, setExpandedKeys] = useState({});
 
     const fetchEntity = async () => {
         try {
@@ -42,6 +42,13 @@ export default function EntityDetail() {
         return url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
     };
 
+    const toggleExpand = (key) => {
+        setExpandedKeys(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
     if (loading) return <div className="text-center py-12">Loading...</div>;
     if (!entity) return <div className="text-center py-12">Entity not found</div>;
 
@@ -56,8 +63,7 @@ export default function EntityDetail() {
                             <img
                                 src={entity.image_url}
                                 alt={entity.name}
-                                className="w-full h-full object-cover cursor-pointer"
-                                onClick={() => setExpandedImage(entity.image_url)}
+                                className="w-full h-full object-cover"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
@@ -113,18 +119,17 @@ export default function EntityDetail() {
             {/* Dynamic Attributes Section */}
             <div className="space-y-4">
                 <h2 className="text-xl font-bold text-gray-900">Attributes & Metadata</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                     {Object.values(entity.attributes || {}).filter(attr => attr.active).map((attr, idx) => (
                         <div key={idx} className="bg-white shadow rounded-lg p-4 border border-gray-100 hover:shadow-md transition-shadow">
                             <div className="flex gap-4">
                                 {/* Thumbnail if URL is image */}
                                 {isImage(attr.url) && (
-                                    <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+                                    <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden cursor-pointer" onClick={() => toggleExpand(attr.key)}>
                                         <img
                                             src={attr.url}
                                             alt={attr.key}
-                                            className="w-full h-full object-cover cursor-pointer hover:opacity-90"
-                                            onClick={() => setExpandedImage(attr.url)}
+                                            className="w-full h-full object-cover hover:opacity-90"
                                         />
                                     </div>
                                 )}
@@ -132,7 +137,6 @@ export default function EntityDetail() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
                                         <h3 className="text-lg font-medium text-gray-900 truncate">{attr.key}</h3>
-                                        {/* Placeholder for individual edit/delete if needed later */}
                                     </div>
                                     <p className="text-gray-600 mt-1">{attr.description}</p>
                                     {attr.url && !isImage(attr.url) && (
@@ -147,6 +151,18 @@ export default function EntityDetail() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Expanded Image Inline */}
+                            {isImage(attr.url) && expandedKeys[attr.key] && (
+                                <div className="mt-4 animate-fade-in">
+                                    <img
+                                        src={attr.url}
+                                        alt={attr.key}
+                                        className="w-full h-auto rounded-lg shadow-sm"
+                                        onClick={() => toggleExpand(attr.key)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                     {Object.values(entity.attributes || {}).filter(attr => attr.active).length === 0 && (
@@ -156,16 +172,6 @@ export default function EntityDetail() {
                     )}
                 </div>
             </div>
-
-            {/* Image Modal */}
-            {expandedImage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4" onClick={() => setExpandedImage(null)}>
-                    <img src={expandedImage} alt="Expanded" className="max-w-full max-h-full rounded-lg shadow-2xl" />
-                    <button className="absolute top-4 right-4 text-white hover:text-gray-300">
-                        <X className="h-8 w-8" />
-                    </button>
-                </div>
-            )}
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { Edit, MoreVertical, Trash2, ExternalLink } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, ExternalLink, ArrowUp, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function EntityDetail() {
     const { id } = useParams();
@@ -10,6 +10,7 @@ export default function EntityDetail() {
     const [loading, setLoading] = useState(true);
     const [expandedKeys, setExpandedKeys] = useState({});
     const [expandedMainImage, setExpandedMainImage] = useState(false);
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     const fetchEntity = async () => {
         try {
@@ -24,6 +25,17 @@ export default function EntityDetail() {
 
     useEffect(() => {
         fetchEntity();
+
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, [id]);
 
     const handleDelete = async () => {
@@ -50,11 +62,34 @@ export default function EntityDetail() {
         }));
     };
 
+    const expandAll = () => {
+        if (entity.image_url) setExpandedMainImage(true);
+
+        const newExpandedKeys = {};
+        if (entity.attributes) {
+            Object.values(entity.attributes).forEach(attr => {
+                if (attr.active && isImage(attr.url)) {
+                    newExpandedKeys[attr.key] = true;
+                }
+            });
+        }
+        setExpandedKeys(newExpandedKeys);
+    };
+
+    const collapseAll = () => {
+        setExpandedMainImage(false);
+        setExpandedKeys({});
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     if (loading) return <div className="text-center py-12">Loading...</div>;
     if (!entity) return <div className="text-center py-12">Entity not found</div>;
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-6 relative pb-12">
             {/* Header Section */}
             <div className="bg-white shadow rounded-lg overflow-hidden">
                 <div className="md:flex">
@@ -132,7 +167,26 @@ export default function EntityDetail() {
 
             {/* Dynamic Attributes Section */}
             <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-900">Attributes & Metadata</h2>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-gray-900">Attributes & Metadata</h2>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={expandAll}
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            <Maximize2 className="h-4 w-4 mr-1" />
+                            Expand All
+                        </button>
+                        <button
+                            onClick={collapseAll}
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            <Minimize2 className="h-4 w-4 mr-1" />
+                            Collapse All
+                        </button>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 gap-4">
                     {Object.values(entity.attributes || {}).filter(attr => attr.active).map((attr, idx) => (
                         <div key={idx} className="bg-white shadow rounded-lg p-4 border border-gray-100 hover:shadow-md transition-shadow">
@@ -186,6 +240,17 @@ export default function EntityDetail() {
                     )}
                 </div>
             </div>
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 p-3 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 z-50"
+                    aria-label="Scroll to top"
+                >
+                    <ArrowUp className="h-6 w-6" />
+                </button>
+            )}
         </div>
     );
 }

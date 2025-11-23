@@ -94,7 +94,7 @@ export default function InsertEntity() {
                             name="entity_type"
                             value={formData.entity_type}
                             onChange={handleFixedChange}
-                            className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                            className="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                         >
                             <option>Website</option>
                             <option>Personality</option>
@@ -112,7 +112,7 @@ export default function InsertEntity() {
                             required
                             value={formData.name}
                             onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-300 rounded-md py-3 px-4"
+                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-600 rounded-md py-3 px-4"
                         />
                     </div>
 
@@ -124,7 +124,7 @@ export default function InsertEntity() {
                             required
                             value={formData.locator}
                             onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-300 rounded-md py-3 px-4"
+                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-600 rounded-md py-3 px-4"
                         />
                     </div>
 
@@ -135,7 +135,7 @@ export default function InsertEntity() {
                             rows={3}
                             value={formData.description}
                             onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-300 rounded-md py-3 px-4"
+                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-600 rounded-md py-3 px-4"
                         />
                     </div>
 
@@ -155,7 +155,7 @@ export default function InsertEntity() {
                             placeholder="tech, blog, ai"
                             value={formData.tags}
                             onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-300 rounded-md py-3 px-4"
+                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-600 rounded-md py-3 px-4"
                         />
                     </div>
                 </div>
@@ -192,7 +192,7 @@ export default function InsertEntity() {
                                             type="text"
                                             value={attr.key}
                                             onChange={(e) => handleDynamicChange(index, 'key', e.target.value)}
-                                            className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
+                                            className="mt-1 block w-full shadow-sm text-base border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
                                             placeholder="e.g., pricing_model"
                                         />
                                     </div>
@@ -202,7 +202,7 @@ export default function InsertEntity() {
                                             type="text"
                                             value={attr.description}
                                             onChange={(e) => handleDynamicChange(index, 'description', e.target.value)}
-                                            className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
+                                            className="mt-1 block w-full shadow-sm text-base border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
                                             placeholder="e.g., Freemium"
                                         />
                                     </div>
@@ -213,7 +213,7 @@ export default function InsertEntity() {
                                                 type="text"
                                                 value={attr.url}
                                                 onChange={(e) => handleDynamicChange(index, 'url', e.target.value)}
-                                                className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
+                                                className="mt-1 block w-full shadow-sm text-base border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
                                             />
                                             <button
                                                 type="button"
@@ -231,7 +231,7 @@ export default function InsertEntity() {
                                             type="text"
                                             value={attr.remarks}
                                             onChange={(e) => handleDynamicChange(index, 'remarks', e.target.value)}
-                                            className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
+                                            className="mt-1 block w-full shadow-sm text-base border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-3 px-4"
                                             placeholder="e.g., Important note"
                                         />
                                     </div>

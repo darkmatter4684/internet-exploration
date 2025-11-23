@@ -8,6 +8,13 @@ class DynamicAttribute(BaseModel):
     remarks: Optional[str] = None
     active: bool = True
 
+class Tag(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
 class EntityBase(BaseModel):
     entity_type: str
     name: str

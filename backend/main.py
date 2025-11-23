@@ -40,6 +40,10 @@ def read_entities(
         return crud.search_entities(db, q, skip=skip, limit=limit)
     return crud.get_entities(db, skip=skip, limit=limit)
 
+@app.get("/tags/", response_model=List[schemas.Tag])
+def read_tags(q: Optional[str] = None, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_tags(db, query=q, limit=limit)
+
 @app.get("/entities/{entity_id}", response_model=schemas.Entity)
 def read_entity(entity_id: int, db: Session = Depends(get_db)):
     db_entity = crud.get_entity(db, entity_id=entity_id)

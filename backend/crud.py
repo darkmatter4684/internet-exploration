@@ -12,6 +12,11 @@ def get_entities(db: Session, skip: int = 0, limit: int = 100):
 def create_entity(db: Session, entity: schemas.EntityCreate):
     # Convert Pydantic models to dicts for JSON storage
     attributes_dict = {k: v.dict() for k, v in entity.attributes.items()}
+    
+    # Sync tags
+    if entity.tags:
+        sync_tags(db, entity.tags)
+
     db_entity = models.Entity(
         entity_type=entity.entity_type,
         name=entity.name,
@@ -38,6 +43,10 @@ def update_entity(db: Session, entity_id: int, entity: schemas.EntityUpdate):
     db_entity.tags = entity.tags
     db_entity.image_url = entity.image_url
     db_entity.attributes = {k: v.dict() for k, v in entity.attributes.items()}
+    
+    # Sync tags
+    if entity.tags:
+        sync_tags(db, entity.tags)
     
     db.commit()
     db.refresh(db_entity)
@@ -81,3 +90,33 @@ def search_entities(db: Session, query: str, skip: int = 0, limit: int = 10):
     start = skip
     end = skip + limit
     return [x[1] for x in scored_entities[start:end]]
+
+def sync_tags(db: Session, tags: list[str]):
+    """Ensures all tags in the list exist in the Tag table."""
+    if not tags:
+        return
+    
+    for tag_name in tags:
+        tag_name = tag_name.strip()
+        if not tag_name:
+            continue
+            
+        # Check if exists
+        existing_tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
+        if not existing_tag:
+            new_tag = models.Tag(name=tag_name)
+            db.add(new_tag)
+            try:
+                db.commit()
+            except:
+                db.rollback() # Handle race condition or unique constraint violation gracefully
+
+def get_tags(db: Session, query: str = None, limit: int = 10):
+    """Fuzzy search for tags."""
+    if not query:
+        return db.query(models.Tag).limit(limit).all()
+    
+    # Using ILIKE for case-insensitive partial match (fuzzy-ish)
+    # For true fuzzy matching we'd need to load all tags and use rapidfuzz, 
+    # but for auto-complete ILIKE %query% is usually what users expect (substring match).
+    return db.query(models.Tag).filter(models.Tag.name.ilike(f"%{query}%")).limit(limit).all()

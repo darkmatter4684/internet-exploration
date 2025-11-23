@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import ImageInput from '../components/ImageInput';
+import TagInput from '../components/TagInput';
 import { Plus, Minus, Save, X, Image as ImageIcon } from 'lucide-react';
 
 export default function InsertEntity() {
@@ -148,14 +149,11 @@ export default function InsertEntity() {
                     </div>
 
                     <div className="sm:col-span-6">
-                        <label className="block text-sm font-medium text-gray-700">Tags (comma separated)</label>
-                        <input
-                            type="text"
-                            name="tags"
-                            placeholder="tech, blog, ai"
+                        <label className="block text-sm font-medium text-gray-700">Tags</label>
+                        <TagInput
                             value={formData.tags}
-                            onChange={handleFixedChange}
-                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-base border-gray-600 rounded-md py-3 px-4"
+                            onChange={(value) => setFormData({ ...formData, tags: value })}
+                            placeholder="Type and press Enter to add tags..."
                         />
                     </div>
                 </div>

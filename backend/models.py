@@ -12,3 +12,9 @@ class Entity(Base):
     tags = Column(JSON)  # Storing tags as a JSON list
     image_url = Column(String, nullable=True)
     attributes = Column(JSON, default={})  # Dynamic attributes: {key: {key, description, url, remarks, active}}
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)

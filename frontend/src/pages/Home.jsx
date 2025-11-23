@@ -9,6 +9,7 @@ export default function Home() {
     const [entities, setEntities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchField, setSearchField] = useState('all');
     const [page, setPage] = useState(0);
     const [limit, setLimit] = useState(10);
     const [hasMore, setHasMore] = useState(true); // Simple way to handle pagination for now
@@ -19,6 +20,7 @@ export default function Home() {
             const response = await api.get('/entities/', {
                 params: {
                     q: searchQuery,
+                    search_field: searchField === 'all' ? null : searchField,
                     skip: page * limit,
                     limit: limit
                 }
@@ -39,10 +41,11 @@ export default function Home() {
 
     useEffect(() => {
         fetchEntities();
-    }, [searchQuery, page, limit]);
+    }, [searchQuery, searchField, page, limit]);
 
-    const handleSearch = (query) => {
+    const handleSearch = (query, field) => {
         setSearchQuery(query);
+        setSearchField(field);
         setPage(0); // Reset to first page on new search
     };
 

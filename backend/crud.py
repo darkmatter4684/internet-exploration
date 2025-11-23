@@ -89,37 +89,38 @@ def delete_entity(db: Session, entity_id: int):
         db.commit()
     return db_entity
 
-def search_entities(db: Session, query: str, skip: int = 0, limit: int = 10):
-    all_entities = db.query(models.Entity).all()
+def search_entities(db: Session, query: str, search_field: str = None, skip: int = 0, limit: int = 10):
+    entities = db.query(models.Entity).all()
     
-    if not query:
-        # Return newest first if no query
-        return sorted(all_entities, key=lambda x: x.id, reverse=True)[skip : skip + limit]
-
-    # Prepare data for fuzzy search
-    # We'll search across name, description, tags, and attribute values
     scored_entities = []
-    
-    for entity in all_entities:
-        searchable_text = f"{entity.name} {entity.description or ''} {entity.entity_type} {' '.join(entity.tags)}"
-        
-        # Add dynamic attributes to searchable text
-        if entity.attributes:
-            for attr in entity.attributes.values():
-                if isinstance(attr, dict) and attr.get('active', True):
-                    searchable_text += f" {attr.get('key', '')} {attr.get('description', '')} {attr.get('remarks', '')}"
-        
-        score = fuzz.partial_ratio(query.lower(), searchable_text.lower())
-        if score > 50: # Threshold
-            scored_entities.append((score, entity))
+    for entity in entities:
+        # Determine text to search based on field
+        if search_field == 'name':
+            text_to_search = entity.name or ""
+        elif search_field == 'description':
+            text_to_search = entity.description or ""
+        elif search_field == 'tags':
+            text_to_search = " ".join(entity.tags) if entity.tags else ""
+        elif search_field == 'locator':
+            text_to_search = entity.locator or ""
+        elif search_field == 'type':
+            text_to_search = entity.entity_type or ""
+        else:
+            # Default: Search all fields
+            text_to_search = f"{entity.name} {entity.description} {entity.locator} {entity.entity_type} {' '.join(entity.tags) if entity.tags else ''}"
             
-    # Sort by score desc
-    scored_entities.sort(key=lambda x: x[0], reverse=True)
+            # Add dynamic attributes to searchable text if searching all
+            if entity.attributes:
+                for attr in entity.attributes.values():
+                    if isinstance(attr, dict) and attr.get('active', True):
+                        text_to_search += f" {attr.get('key', '')} {attr.get('description', '')} {attr.get('remarks', '')}"
+        
+        score = fuzz.partial_ratio(query.lower(), text_to_search.lower())
+        if score > 60:
+            scored_entities.append((score, entity))
     
-    # Pagination
-    start = skip
-    end = skip + limit
-    return [x[1] for x in scored_entities[start:end]]
+    scored_entities.sort(key=lambda x: x[0], reverse=True)
+    return [entity for score, entity in scored_entities[skip : skip + limit]]
 
 def sync_tags(db: Session, tags: list[str]):
     """Ensures all tags in the list exist in the Tag table."""

@@ -32,12 +32,13 @@ def create_entity(entity: schemas.EntityCreate, db: Session = Depends(get_db)):
 @app.get("/entities/", response_model=List[schemas.Entity])
 def read_entities(
     q: Optional[str] = None,
+    search_field: Optional[str] = None,
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
     if q:
-        return crud.search_entities(db, q, skip=skip, limit=limit)
+        return crud.search_entities(db, q, search_field=search_field, skip=skip, limit=limit)
     return crud.get_entities(db, skip=skip, limit=limit)
 
 @app.get("/tags/", response_model=List[schemas.Tag])

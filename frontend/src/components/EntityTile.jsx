@@ -43,22 +43,24 @@ export default function EntityTile({ entity }) {
                         {entity.description || <span className="italic text-gray-400">No description provided.</span>}
                     </p>
 
-                    <div className="flex items-center gap-2 mt-2">
-                        {entity.tags && entity.tags.slice(0, 5).map((tag, index) => (
-                            <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                {tag}
-                            </span>
-                        ))}
-                        {entity.tags && entity.tags.length > 5 && (
-                            <span className="text-xs text-gray-500">+{entity.tags.length - 5} more</span>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                        <div className="flex items-center gap-2">
+                            {entity.tags && entity.tags.slice(0, 3).map((tag, index) => (
+                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                    {tag}
+                                </span>
+                            ))}
+                            {entity.tags && entity.tags.length > 3 && (
+                                <span className="text-xs text-gray-500">+{entity.tags.length - 3}</span>
+                            )}
+                        </div>
+
+                        {entity.updated_at && (
+                            <div className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                Updated: {formatDateIST(entity.updated_at)}
+                            </div>
                         )}
                     </div>
-
-                    {entity.updated_at && (
-                        <div className="mt-2 pt-2 border-t border-gray-50 text-xs text-gray-400 text-right">
-                            Updated: {formatDateIST(entity.updated_at)}
-                        </div>
-                    )}
                 </div>
             </div>
         </Link>

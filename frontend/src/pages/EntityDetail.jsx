@@ -223,7 +223,15 @@ export default function EntityDetail() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-gray-600 mt-1">{attr.description}</p>
+                                    <p className="text-gray-600 mt-1 whitespace-pre-wrap">
+                                        {attr.description && attr.description.split(/(https?:\/\/[^\s]+)/g).map((part, i) => (
+                                            part.match(/https?:\/\/[^\s]+/) ? (
+                                                <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline break-all">
+                                                    {part}
+                                                </a>
+                                            ) : part
+                                        ))}
+                                    </p>
                                     {attr.url && !isImage(attr.url) && (
                                         <a href={attr.url} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline block mt-1 truncate">
                                             {attr.url}

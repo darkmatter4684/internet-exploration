@@ -205,9 +205,9 @@ export default function TagsPage() {
                                     <p>No entities found with this tag.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 gap-6">
                                     {entities.map(entity => (
-                                        <EntityTile key={entity.id} entity={entity} />
+                                        <EntityTile key={entity.id} entity={entity} detailed={true} />
                                     ))}
                                 </div>
                             )}

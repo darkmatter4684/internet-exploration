@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import InsertEntity from './pages/InsertEntity'
 import EntityDetail from './pages/EntityDetail'
 import EditEntity from './pages/EditEntity'
+import TagsPage from './pages/TagsPage'
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="new" element={<InsertEntity />} />
+                    <Route path="tags" element={<TagsPage />} />
                     <Route path="entity/:id" element={<EntityDetail />} />
                     <Route path="entity/:id/edit" element={<EditEntity />} />
                 </Route>

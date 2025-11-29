@@ -33,17 +33,32 @@ def create_entity(entity: schemas.EntityCreate, db: Session = Depends(get_db)):
 def read_entities(
     q: Optional[str] = None,
     search_field: Optional[str] = None,
+    exact_match: bool = False,
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
     if q:
-        return crud.search_entities(db, q, search_field=search_field, skip=skip, limit=limit)
+        return crud.search_entities(db, q, search_field=search_field, exact_match=exact_match, skip=skip, limit=limit)
     return crud.get_entities(db, skip=skip, limit=limit)
 
 @app.get("/tags/", response_model=List[schemas.Tag])
-def read_tags(q: Optional[str] = None, limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_tags(db, query=q, limit=limit)
+def read_tags(q: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_tags(db, query=q, skip=skip, limit=limit)
+
+@app.put("/tags/{tag_id}", response_model=schemas.Tag)
+def update_tag(tag_id: int, tag: schemas.TagUpdate, db: Session = Depends(get_db)):
+    db_tag = crud.update_tag(db, tag_id, tag)
+    if db_tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return db_tag
+
+@app.delete("/tags/{tag_id}", response_model=schemas.Tag)
+def delete_tag(tag_id: int, db: Session = Depends(get_db)):
+    db_tag = crud.delete_tag(db, tag_id)
+    if db_tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return db_tag
 
 @app.get("/entities/{entity_id}", response_model=schemas.Entity)
 def read_entity(entity_id: int, db: Session = Depends(get_db)):

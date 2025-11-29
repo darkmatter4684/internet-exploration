@@ -89,11 +89,17 @@ def delete_entity(db: Session, entity_id: int):
         db.commit()
     return db_entity
 
-def search_entities(db: Session, query: str, search_field: str = None, skip: int = 0, limit: int = 10):
+def search_entities(db: Session, query: str, search_field: str = None, exact_match: bool = False, skip: int = 0, limit: int = 10):
     entities = db.query(models.Entity).all()
     
     scored_entities = []
     for entity in entities:
+        # Exact Match Logic for Tags
+        if exact_match and search_field == 'tags':
+            if entity.tags and query in entity.tags:
+                scored_entities.append((100, entity))
+            continue
+
         # Determine text to search based on field
         if search_field == 'name':
             text_to_search = entity.name or ""
@@ -142,12 +148,68 @@ def sync_tags(db: Session, tags: list[str]):
             except:
                 db.rollback() # Handle race condition or unique constraint violation gracefully
 
-def get_tags(db: Session, query: str = None, limit: int = 10):
+def get_tags(db: Session, query: str = None, skip: int = 0, limit: int = 100):
     """Fuzzy search for tags."""
-    if not query:
-        return db.query(models.Tag).limit(limit).all()
+    q = db.query(models.Tag)
+    if query:
+        q = q.filter(models.Tag.name.ilike(f"%{query}%"))
+    return q.offset(skip).limit(limit).all()
+
+def get_tag(db: Session, tag_id: int):
+    return db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+
+def update_tag(db: Session, tag_id: int, tag_update: schemas.TagUpdate):
+    db_tag = get_tag(db, tag_id)
+    if not db_tag:
+        return None
     
-    # Using ILIKE for case-insensitive partial match (fuzzy-ish)
-    # For true fuzzy matching we'd need to load all tags and use rapidfuzz, 
-    # but for auto-complete ILIKE %query% is usually what users expect (substring match).
-    return db.query(models.Tag).filter(models.Tag.name.ilike(f"%{query}%")).limit(limit).all()
+    old_name = db_tag.name
+    new_name = tag_update.name.strip()
+    
+    if old_name == new_name:
+        return db_tag
+
+    # Update Tag table
+    db_tag.name = new_name
+    
+    # Cascade update to Entities
+    # This is the "heavy" operation. We scan entities that have this tag.
+    # Since tags are JSON list, we can't easily query "contains" in a DB-agnostic way efficiently 
+    # without native JSON operators. For SQLite/Postgres we could use specific operators.
+    # For now, we'll fetch all entities and filter in python (simpler for this scale) 
+    # OR better: use a LIKE query on the JSON string if we assume simple storage.
+    # Let's do a safe fetch-all-and-filter approach for correctness, or use ILIKE on the text representation.
+    
+    # Optimization: Only fetch entities that might have the tag
+    # We'll use a broad search and then refine
+    candidates = db.query(models.Entity).filter(models.Entity.tags.cast(models.String).ilike(f'%"{old_name}"%')).all()
+    
+    for entity in candidates:
+        if entity.tags and old_name in entity.tags:
+            new_tags = [t for t in entity.tags if t != old_name]
+            new_tags.append(new_name)
+            # Deduplicate just in case
+            entity.tags = list(set(new_tags))
+            
+    db.commit()
+    db.refresh(db_tag)
+    return db_tag
+
+def delete_tag(db: Session, tag_id: int):
+    db_tag = get_tag(db, tag_id)
+    if not db_tag:
+        return None
+    
+    tag_name = db_tag.name
+    
+    # Cascade delete from Entities
+    candidates = db.query(models.Entity).filter(models.Entity.tags.cast(models.String).ilike(f'%"{tag_name}"%')).all()
+    
+    for entity in candidates:
+        if entity.tags and tag_name in entity.tags:
+            new_tags = [t for t in entity.tags if t != tag_name]
+            entity.tags = new_tags
+            
+    db.delete(db_tag)
+    db.commit()
+    return db_tag

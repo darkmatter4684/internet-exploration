@@ -11,9 +11,17 @@ class DynamicAttribute(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-class Tag(BaseModel):
-    id: int
+class TagBase(BaseModel):
     name: str
+
+class TagCreate(TagBase):
+    pass
+
+class TagUpdate(TagBase):
+    pass
+
+class Tag(TagBase):
+    id: int
 
     class Config:
         orm_mode = True

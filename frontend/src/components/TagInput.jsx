@@ -32,7 +32,7 @@ export default function TagInput({ value, onChange, placeholder }) {
 
         const timeoutId = setTimeout(fetchSuggestions, 300); // Debounce
         return () => clearTimeout(timeoutId);
-    }, [inputValue, tags]);
+    }, [inputValue, value]);
 
     const addTag = (tag) => {
         const newTags = [...tags, tag];
